@@ -2,6 +2,7 @@ from PIL import Image
 import pyautogui
 import time
 import math
+from collections import Counter
 
 width_min = 358
 width_max = 1678
@@ -14,13 +15,22 @@ def main():
 
     # Load the image
     try:
-        image = Image.open("your_image.png").convert("RGB")
+        image = Image.open("your_image.jpg").convert("RGB").quantize(colors=3).convert('RGB') #caps at 12 colors
     except FileNotFoundError:
         print("Image file not found.")
         return
 
     color_coordinates = {}
     unique_colors = set(image.getdata())
+
+
+    dominant_color = Counter(image.getdata()).most_common(1)[0][0]
+    change_color(dominant_color)
+    fill_bucket(width_min,0)
+
+    unique_colors.remove(dominant_color) #i set background to most used color! then remove it from a color i need to draw
+
+
     # Get all unique colors in the image and their coordinates
     for y in range(0, height_max - height_min + 1): #loop through in dict create each color element that lists it's x, y pos\
         last_color = None
@@ -42,6 +52,22 @@ def main():
         for arr in color_coordinates[pixel_color]:
             click(arr)
 
+
+def fill_bucket(x, y): #use fillbucket at given location then switch back to paint tool
+    pyautogui.click(50, 365)
+    time.sleep(.3)
+    pyautogui.click(230, 210)
+    time.sleep(.3)
+    pyautogui.click(865, 75)
+    time.sleep(.1)
+    pyautogui.click(x,y)
+    time.sleep(5)
+
+    pyautogui.click(50, 365)
+    time.sleep(.1)
+    pyautogui.click(765, 210)
+    time.sleep(.3)
+    pyautogui.click(865, 75)
 
 def change_color(hex_code):
     # Click the color button
